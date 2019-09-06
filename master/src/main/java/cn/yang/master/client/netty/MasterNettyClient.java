@@ -9,8 +9,6 @@ import cn.yang.common.netty.INettyClient;
 import cn.yang.common.util.BeanUtil;
 import cn.yang.common.util.MacUtils;
 import cn.yang.master.client.constant.ExceptionMessageConstants;
-import cn.yang.common.util.PropertiesUtil;
-import cn.yang.master.client.constant.ConfigConstants;
 
 import cn.yang.master.client.exception.MasterChannelHandlerException;
 import cn.yang.master.client.exception.MasterClientException;
@@ -19,14 +17,10 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
-import javax.swing.*;
-import java.io.IOException;
 
 /**
  * @author Cool-Coding
@@ -44,20 +38,11 @@ public class MasterNettyClient implements INettyClient{
     /** logger */
     private static final Logger LOGGER = LoggerFactory.getLogger(MasterNettyClient.class);
 
-    private String host;
-    private int port;
-
     /**
      * 初始化
      */
     public void init(){
         group = new NioEventLoopGroup();
-        try {
-            host = PropertiesUtil.getString(ConfigConstants.CONFIG_FILE_PATH, ConfigConstants.SERVER_IP);
-            port = PropertiesUtil.getInt(ConfigConstants.CONFIG_FILE_PATH, ConfigConstants.SERVER_PORT);
-        }catch (IOException e){
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -65,13 +50,15 @@ public class MasterNettyClient implements INettyClient{
      * @throws Exception
      */
     @Override
-    public void connect() throws Exception{
+    public void connect(String server) throws Exception{
         final Bootstrap bootstrap = new Bootstrap();
         bootstrap.group(group)
                 .channel(NioSocketChannel.class)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .handler(channelInitialize);
-        final ChannelFuture sync = bootstrap.connect(host, port).sync();
+        final ChannelFuture sync;
+        String[] a = server.split(":");
+        sync = bootstrap.connect(a[0], Integer.valueOf(a[1])).sync();
         sync.channel().writeAndFlush(buildConnectRequest());
         try {
                 sync.channel().closeFuture();

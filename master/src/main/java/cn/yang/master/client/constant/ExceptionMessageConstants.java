@@ -7,6 +7,7 @@ package cn.yang.master.client.constant;
 public class ExceptionMessageConstants {
     public static final String HANDLER_NOT_SUPPORTED      = "Not supported channelHandler";
     public static final String PUPPET_NAME_EMPTY          = "The puppet's name is required";
+    public static final String SERVICE_NAME_EMPTY          = "服务url未定义";
     public static final String MASTER_FIRE_COMMAND_ERROR  = "Master can't handle this command";
     public static final String FIRE_COMMAND_HANDLE_ERROR  = "Command is not a subclass of AbstractMasterFireCommandHandler";
     public static final String CONTRL_COMMAND_RESULT_ERROR= "The result of control command is not right.it should be a puppet name";

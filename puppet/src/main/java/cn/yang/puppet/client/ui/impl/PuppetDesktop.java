@@ -40,9 +40,9 @@ public class PuppetDesktop extends AbstractRobotReplay {
     }
 
     @Override
-    public void connect() throws Exception{
+    public void connect(String server) throws Exception{
 
-        puppetClient.connect();
+        puppetClient.connect(server);
     }
 
     public void setPuppetClient(PuppetNettyClient puppetClient) {

@@ -14,11 +14,14 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.ScheduledFuture;
 import org.springframework.util.StringUtils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 
 /**
  * @author Cool-Coding
@@ -32,8 +35,16 @@ public class ConnectCommandHandler extends AbstractPuppetCommandHandler {
 
     public ConnectCommandHandler() throws CommandHandlerException{
         try {
-            host = PropertiesUtil.getString(ConfigConstants.CONFIG_FILE_PATH, ConfigConstants.SERVER_IP);
-            port = PropertiesUtil.getInt(ConfigConstants.CONFIG_FILE_PATH, ConfigConstants.SERVER_PORT);
+            String pattern = ".*:.*";
+            BufferedReader bf = new BufferedReader(new InputStreamReader(System.in));
+            String str;
+            do {
+                System.out.println("输入ip + 端口号-----------");
+                str = bf.readLine();
+            } while ("".equals(str) || !Pattern.matches(pattern, str));
+            String[] a = str.split(":");
+            host = a[0];
+            port = Integer.valueOf(a[1]);
         }catch (IOException e){
             throw new CommandHandlerException(e.getMessage(),e);
         }

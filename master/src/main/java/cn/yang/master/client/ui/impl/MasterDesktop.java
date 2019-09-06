@@ -1,8 +1,10 @@
 package cn.yang.master.client.ui.impl;
 
+import cn.yang.common.util.PropertiesUtil;
 import cn.yang.common.util.TaskExecutors;
 import cn.yang.common.command.Commands;
 import cn.yang.common.util.BeanUtil;
+import cn.yang.master.client.constant.ConfigConstants;
 import cn.yang.master.client.constant.ExceptionMessageConstants;
 import cn.yang.master.client.constant.MessageConstants;
 import cn.yang.master.client.exception.MasterClientException;
@@ -14,6 +16,7 @@ import org.springframework.util.StringUtils;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -25,9 +28,19 @@ public class MasterDesktop extends JFrame implements IMasterDesktop,ActionListen
     private MasterNettyClient masterClient;
     private HashMap<String, IDisplayPuppet> puppets=new HashMap<>();
 
+    private JTextField serverTextField;
     private JTextField puppetNameTextField;
 
+    private String host;
+    private int port;
+
     public MasterDesktop(){
+      try {
+          host = PropertiesUtil.getString(ConfigConstants.CONFIG_FILE_PATH, ConfigConstants.SERVER_IP);
+          port = PropertiesUtil.getInt(ConfigConstants.CONFIG_FILE_PATH, ConfigConstants.SERVER_PORT);
+      }catch (IOException e){
+          e.printStackTrace();
+      }
       setting();
       initMenu();
       initBody();
@@ -39,7 +52,7 @@ public class MasterDesktop extends JFrame implements IMasterDesktop,ActionListen
             SwingUtilities.invokeAndWait(() -> {
                 setVisible(true);
             });
-            connect();
+            connect(host + ":" + port);
         }catch (Exception e){
             popToShowMessage(ExceptionMessageConstants.LAUNCH_FAILED,e.getMessage());
         }
@@ -65,21 +78,6 @@ public class MasterDesktop extends JFrame implements IMasterDesktop,ActionListen
 
     @Override
     public void initMenu(){
-        JMenuBar menuBar=new JMenuBar();
-        setJMenuBar(menuBar);
-
-        JMenu jMenu=new JMenu("操作");
-        menuBar.add(jMenu);
-
-        JMenuItem connect=new JMenuItem("连接");
-        connect.setActionCommand(Commands.CONNECT.name());
-        connect.addActionListener(this);
-        jMenu.add(connect);
-
-        JMenuItem control=new JMenuItem("远程");
-        control.setActionCommand(Commands.CONTROL.name());
-        control.addActionListener(this);
-        jMenu.add(control);
     }
 
     @Override
@@ -87,7 +85,7 @@ public class MasterDesktop extends JFrame implements IMasterDesktop,ActionListen
         Font titleFont=new Font("宋体",Font.BOLD,25);
         Font contentFont=new Font("宋体",Font.PLAIN,20);
 
-        JPanel jPanel=new JPanel(new GridLayout(3,1));
+        JPanel jPanel=new JPanel(new GridLayout(4,1));
 
         JPanel titlePanel=new JPanel();
         JTextArea jTitle=new JTextArea(3,10);
@@ -98,6 +96,24 @@ public class MasterDesktop extends JFrame implements IMasterDesktop,ActionListen
         jTitle.setEditable(false);
         titlePanel.add(jTitle);
         jPanel.add(titlePanel);
+
+        JPanel server=new JPanel();
+        jPanel.add(server);
+        JLabel servicejLabel=new JLabel();
+        servicejLabel.setText("远程服务器:");
+        servicejLabel.setFont(contentFont);
+        server.add(servicejLabel);
+
+        serverTextField = new JTextField(20);
+        serverTextField.setText(host + ":" + port);
+        serverTextField.setFont(contentFont);
+        server.add(serverTextField);
+
+        JButton serverButton=new JButton();
+        serverButton.setText("连接");
+        serverButton.setActionCommand(Commands.CONNECT.name());
+        serverButton.addActionListener(this);
+        server.add(serverButton);
 
         JPanel puppetNamePanel=new JPanel();
         jPanel.add(puppetNamePanel);
@@ -114,7 +130,7 @@ public class MasterDesktop extends JFrame implements IMasterDesktop,ActionListen
         JPanel remoteButtonPanel=new JPanel();
         jPanel.add(remoteButtonPanel);
         JButton jButton=new JButton();
-        jButton.setText("远程");
+        jButton.setText("远程控制程序");
         jButton.setActionCommand(Commands.CONTROL.name());
         jButton.addActionListener(this);
         remoteButtonPanel.add(jButton);
@@ -145,19 +161,24 @@ public class MasterDesktop extends JFrame implements IMasterDesktop,ActionListen
     }
 
     @Override
-    public void connect() throws Exception{
-        masterClient.connect();
+    public void connect(String server) throws Exception{
+        masterClient.connect(server);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
        switch (Commands.valueOf(e.getActionCommand())){
            case CONNECT:
-               try {
-                   connect();
-                   popToShowMessage(MessageConstants.CONNECT_SUCCESSFULLY);
-               }catch (Exception e2){
-                   popToShowMessage(ExceptionMessageConstants.CONNECTION_SERVER_FAILED,e2.getMessage());
+               if (StringUtils.isEmpty(serverTextField.getText())){
+                   popToShowMessage(ExceptionMessageConstants.SERVICE_NAME_EMPTY);
+               }else {
+                   String service=serverTextField.getText();
+                   try {
+                       connect(service);
+                       popToShowMessage(MessageConstants.CONNECT_SUCCESSFULLY);
+                   }catch (Exception e2){
+                       popToShowMessage(ExceptionMessageConstants.CONNECTION_SERVER_FAILED,e2.getMessage());
+                   }
                }
                break;
            case CONTROL:

@@ -16,7 +16,11 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.regex.Pattern;
 
 /**
  * @author Cool-Coding
@@ -42,15 +46,27 @@ public class PuppetNettyClient implements INettyClient {
     public void init() throws PuppetClientException{
         group = new NioEventLoopGroup();
         try {
-            host = PropertiesUtil.getString(ConfigConstants.CONFIG_FILE_PATH, ConfigConstants.SERVER_IP);
-            port = PropertiesUtil.getInt(ConfigConstants.CONFIG_FILE_PATH, ConfigConstants.SERVER_PORT);
+            String pattern = ".*:.*";
+            BufferedReader bf = new BufferedReader(new InputStreamReader(System.in));
+            String str;
+            do {
+                System.out.println("输入ip + 端口号----------");
+                str = bf.readLine();
+            } while ("".equals(str) || !Pattern.matches(pattern, str));
+            String[] a = str.split(":");
+            host = a[0];
+            port = Integer.valueOf(a[1]);
         }catch (IOException e){
             throw new PuppetClientException(e.getMessage(),e);
         }
     }
 
+    private void connect () {
+        connect("");
+    }
+
     @Override
-    public void connect(){
+    public void connect(String server){
             final Bootstrap bootstrap = new Bootstrap();
             bootstrap.group(group)
                     .channel(NioSocketChannel.class)

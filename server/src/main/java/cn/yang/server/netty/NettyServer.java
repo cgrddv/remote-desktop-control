@@ -9,7 +9,10 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.regex.Pattern;
 
 /**
  * @author Cool-Coding 2018/7/24
@@ -49,8 +52,16 @@ public class NettyServer {
 
     public void start() throws Exception{
         try {
-            String ip = PropertiesUtil.getString(ConfigConstants.CONFIG_FILE_PATH, ConfigConstants.SERVER_IP);
-            int port = PropertiesUtil.getInt(ConfigConstants.CONFIG_FILE_PATH, ConfigConstants.SERVER_PORT);
+            String pattern = ".*:.*";
+            BufferedReader bf = new BufferedReader(new InputStreamReader(System.in));
+            String str;
+            do {
+                System.out.println("输入自己网络能访问到的ip + 端口号");
+                str = bf.readLine();
+            } while ("".equals(str) || !Pattern.matches(pattern, str));
+            String[] a = str.split(":");
+            String ip = a[0];
+            int port = Integer.valueOf(a[1]);
             bind(ip,port);
         }catch (IOException | InterruptedException e){
             LOGGER.error(e.getMessage(),e);

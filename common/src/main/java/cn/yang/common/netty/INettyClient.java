@@ -8,5 +8,5 @@ public interface INettyClient {
     /**
      * 连接服务器
      */
-    void connect() throws Exception;
+    void connect(String server) throws Exception;
 }

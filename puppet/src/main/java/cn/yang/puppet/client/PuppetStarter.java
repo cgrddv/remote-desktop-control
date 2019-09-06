@@ -25,7 +25,7 @@ public class PuppetStarter {
          *   静态成员变量generator
          */
         try {
-            context.getBean(IReplay.class).connect();
+            context.getBean(IReplay.class).connect("");
         }catch (Exception e){
             LOGGER.error(e.getMessage(),e);
         }
