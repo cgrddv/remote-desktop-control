@@ -344,5 +344,9 @@ public interface IDisplayPuppet {
 - 优化体验   
    - master向puppet发送命令失败，如果鼠标移动，则会一有移动就发送，导致反复出现相同消息
       
-## 讨论
-**bug反馈及建议**：https://github.com/Cool-Coding/remote-desktop-control/issues
+## 生成exe
+ > exe4j
+## 生成安装包
+ > Inno Setup
+ 
+
